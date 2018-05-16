@@ -612,4 +612,17 @@ class repository_owncloud extends repository {
         }
         return $ret;
     }
+    
+    public function get_icon() {
+        $icon = $this->get_option('instanceicon');
+        if ($icon === 'nextcloud') {
+            return (new moodle_url('/repository/owncloud/pix/nextcloud.svg'))->out();
+        } else if ($icon === 'owncloud') {
+            return (new moodle_url('/repository/owncloud/pix/owncloud.svg'))->out();
+        } else {
+            return parent::get_icon();
+        }
+
+    }
+
 }

@@ -448,6 +448,7 @@ class repository_owncloud extends repository {
         $url = new \moodle_url('/admin/tool/oauth2/issuers.php');
         $mform->addElement('static', null, '', get_string('oauth2serviceslink', 'repository_owncloud', $url->out()));
 
+        // Show list of issuers.
         $mform->addElement('select', 'issuerid', get_string('chooseissuer', 'repository_owncloud'), $types);
         $mform->addRule('issuerid', get_string('required'), 'required', null, 'issuer');
         $mform->addHelpButton('issuerid', 'chooseissuer', 'repository_owncloud');
@@ -459,6 +460,10 @@ class repository_owncloud extends repository {
         } else {
             $mform->addElement('html', get_string('right_issuers', 'repository_owncloud', implode(', ', $validissuers)));
         }
+
+        // Allow choice of icon.
+        $mform->addElement('text', 'instanceicon', get_string('chooseicon', 'repository_owncloud'));
+        $mform->setType('instanceicon', PARAM_FILE);
     }
 
     /**
@@ -469,6 +474,7 @@ class repository_owncloud extends repository {
      */
     public function set_option($options = array()) {
         $options['issuerid'] = clean_param($options['issuerid'], PARAM_INT);
+        $options['instanceicon'] = clean_param($options['instanceicon'], PARAM_FILE);
         $ret = parent::set_option($options);
         return $ret;
     }
@@ -479,7 +485,7 @@ class repository_owncloud extends repository {
      * @return array
      */
     public static function get_instance_option_names() {
-        return ['issuerid'];
+        return ['issuerid', 'instanceicon'];
     }
 
     /**

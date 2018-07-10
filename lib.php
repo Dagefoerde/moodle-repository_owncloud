@@ -425,7 +425,7 @@ class repository_owncloud extends repository {
         }
 
         if (!$this->client->is_logged_in()) {
-            $this->print_login_popup(['style' => 'margin-top: 250px']);
+            $this->print_login_popup();
             return;
 
         }
@@ -773,19 +773,15 @@ class repository_owncloud extends repository {
         return array_merge($folders, $files);
     }
     /**
-     * Print the login in a popup.
-     *
-     * @param array|null $attr Custom attributes to be applied to popup div.
+     * Open the login in a popup.
      */
-    private function print_login_popup($attr = null) {
-        global $OUTPUT;
+    private function print_login_popup() {
+        global $OUTPUT, $PAGE;
 
         $this->client = $this->get_user_oauth_client();
         $url = new moodle_url($this->client->get_login_url());
         $state = $url->get_param('state') . '&reloadparent=true';
         $url->param('state', $state);
-
-        echo $OUTPUT->header();
 
         $repositoryname = get_string('pluginname', 'repository_owncloud');
 
@@ -794,9 +790,20 @@ class repository_owncloud extends repository {
         $button->add_action(new popup_action('click', $url, 'Login'));
         $button->class = 'mdl-align';
         $button = $OUTPUT->render($button);
-        echo html_writer::div($button, '', $attr);
 
+        $popupargs = [
+            'url' => $url->out(false),
+            'name' => 'repository_owncloud_login',
+            'options' => [],
+        ];
+
+        $PAGE->set_pagetype('popup');
+        $PAGE->requires->js_amd_inline("require(['core/yui'], function(Y) {
+            Y.on('domready', openpopup, this, null, " . json_encode($popupargs) . "); });");
+        echo $OUTPUT->header();
+        //echo html_writer::div($button, '', ['style' => 'margin-top: 250px']);
         echo $OUTPUT->footer();
+
     }
     /**
      * Prepare response of get_listing; namely

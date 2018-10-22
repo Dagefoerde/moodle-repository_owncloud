@@ -183,6 +183,26 @@ class access_controlled_link_manager{
             $result = $this->systemwebdavclient->copy_file($sourcepath, $destinationpath, true);
         } else if ($operation === 'move') {
             $result = $webdavclient->move($sourcepath, $destinationpath, false);
+            if ($result == 412) {
+                // A file with that name already exists at that target. Find a unique location!
+                $increment = 0; // Will be appended to/inserted into the filename.
+                // Define the pattern that is used to insert the increment to the filename.
+                if (substr_count($srcpath, '.') === 0) {
+                    // No file extension; append increment to the (sprintf-escaped) name.
+                    $namepattern = str_replace('%', '%%', $destinationpath) . ' (%s)';
+                } else {
+                    // Append the increment to the second-to-last component, which is presumably the one before the extension.
+                    // Again, the original path is sprintf-escaped.
+                    $components = explode('.', str_replace('%', '%%', $destinationpath));
+                    $components[count($components) - 2] .= ' (%s)';
+                    $namepattern = implode('.', $components);
+                }
+            }
+            while ($result == 412) {
+                $increment++;
+                $destinationpath = sprintf($namepattern, $increment);
+                $result = $webdavclient->move($sourcepath, $destinationpath, false);
+            }
         }
         $this->systemwebdavclient->close();
         if (!($result == 201 || $result == 412)) {
